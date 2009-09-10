@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 
 import core.*;
+import data.*;
+import data.parser;
 import util.*;
 import user.*;
 
@@ -22,9 +24,9 @@ public class listener implements Runnable {
     
     public void send(byte[] data) {
     	try {
-    		buffer_in tmp = new buffer_in(data);
-    		System.out.println("out:");
-    		System.out.println(tmp.debugOutput());
+    		//buffer_in tmp = new buffer_in(data);
+    		//System.out.println("out:");
+    		//System.out.println(tmp.debugOutput());
     		
     		server.getOutputStream().write(data);
     		server.getOutputStream().flush();
@@ -48,7 +50,7 @@ public class listener implements Runnable {
             if (server.isClosed() == true)
             {
             	jbotnet.svr.listeners.remove(this);
-            	parser.send_user_logoff(session.uid);
+            	distributor.send_user_logoff(session.uid);
                 System.out.println(":: Disconnected!");
                 break;
             }
@@ -60,7 +62,7 @@ public class listener implements Runnable {
             if (b == -1)
             {
             	jbotnet.svr.listeners.remove(this);
-            	parser.send_user_logoff(session.uid);
+            	distributor.send_user_logoff(session.uid);
                 System.out.println(":: Connection terminated!");
                 //currentStatus = SCK_ERROR;
                 break;
@@ -69,7 +71,7 @@ public class listener implements Runnable {
             if (b != 0x01)
             {
             	jbotnet.svr.listeners.remove(this);
-            	parser.send_user_logoff(session.uid);
+            	distributor.send_user_logoff(session.uid);
                 System.out.println(":: Invalid packet format!");
                 //currentStatus = SCK_ERROR;
                 break;
@@ -96,8 +98,8 @@ public class listener implements Runnable {
 	            raw.insertByte((byte) b);
             }
             
-    		System.out.println("raw:");
-            System.out.println(raw.debugOutput());
+    		//System.out.println("raw:");
+            //System.out.println(raw.debugOutput());
             
             parser.parse(this, id, recv.getBuffer());
             recv.clear();

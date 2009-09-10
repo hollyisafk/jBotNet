@@ -1,7 +1,10 @@
-package core;
+package data;
 
 import java.io.IOException;
+
 import net.listener;
+
+import core.jbotnet;
 import util.*;
 import user.*;
 
@@ -23,83 +26,9 @@ public class parser {
 	public static final int PACKET_ACCOUNT  			= 0x0D;
 	public static final int PACKET_CHATDROPOPTIONS  	= 0x10;
 	
-	public static String implode(byte[] ary, String delim) {
-	    String out = "";
-	    for(int i=0; i<ary.length; i++) {
-	        if(i!=0) { out += delim; }
-	        out += ary[i];
-	    }
-	    return out;
-	}
-	
-	public static void send_all(byte[] data) {
-		send_all(data, 0);
-	}
-	
-	public static void send_all(byte[] data, int skip) {
-    	for (listener l : jbotnet.svr.listeners) {
-    		session s = l.session;
-    		if (s.uid == skip)
-    			continue;
-        	l.send(data);
-    	}
-	}
-	
-	public static void send_user_info(session s) {
-		buffer_out out = new buffer_out();
-		out.insertDword(s.uid);
-		out.insertDword(0x01);
-		out.insertDword(0x00);
-		out.insertNTString(s.bnetusername);
-		out.insertNTString(s.bnetchannel);
-		out.insertDword(s.bnetserver);
-		out.insertNTString(s.jbnusername);
-		out.insertNTString(s.jbndatabase);
-    	send_all(out.format(PACKET_USERINFO), s.uid);
-	}
-	
-	public static void send_user_logoff(int uid) {
-		buffer_out out = new buffer_out();
-		out.insertDword(uid);
-		send_all(out.format(PACKET_USERLOGGINGOFF));
-	}
-	
-	public static void send_users(listener client) {
-		buffer_out out = new buffer_out();
-		out.clear();
-		out.insertDword(client.session.uid);
-		out.insertDword(0x01);
-		out.insertDword(0x00);
-		out.insertNTString(client.session.bnetusername);
-		out.insertNTString(client.session.bnetchannel);
-		out.insertDword(client.session.bnetserver);
-		out.insertNTString(client.session.jbnusername);
-		out.insertNTString(client.session.jbndatabase);
-    	client.send(out.format(PACKET_USERINFO));
-    	
-    	for (listener l : jbotnet.svr.listeners) {
-    		session s = l.session;
-    		if (s.uid == 0 || s.uid == client.session.uid)
-    			continue;
-    		out.clear();
-    		out.insertDword(s.uid);
-    		out.insertDword(0x01);
-    		out.insertDword(0x00);
-    		out.insertNTString(s.bnetusername);
-    		out.insertNTString(s.bnetchannel);
-    		out.insertDword(s.bnetserver);
-    		out.insertNTString(s.jbnusername);
-    		out.insertNTString(s.jbndatabase);
-        	client.send(out.format(PACKET_USERINFO));
-    	}
-	}
-	
 	public static void parse(listener client, int id, byte[] data) {
         buffer_in in = new buffer_in(data);
         buffer_out out = new buffer_out();
-
-		//System.out.println("in:");
-        //System.out.println(in.debugOutput());
         
 	    switch (id) {
         case PACKET_IDLE:
@@ -163,7 +92,7 @@ public class parser {
         		client.session.bnetusername = username;
         		client.session.bnetchannel = channel;
         		client.session.bnetserver = ipaddr;
-        		client.session.bnetserverip = implode(octet, ".");
+        		client.session.bnetserverip = helper.implode(octet, ".");
         		client.session.jbncycle = (cycle == 1 ? true : false);
         		
         		// attempts to be public
@@ -206,13 +135,15 @@ public class parser {
 	            	if (jbotnet.cfg.Read("database", dbid).equals(dbpw) && dbpw.length() != 0) {
 	            		// put into database
 	            		client.session.set_state(session.LOGONSTATE_IDENTIFIED);
-	            		client.session.uid = jbotnet.svr.guest_id;
-	            		jbotnet.svr.guest_id++;
+	            		if (client.session.uid == -1) {
+	            			client.session.uid = jbotnet.svr.guest_id;
+	            			jbotnet.svr.guest_id++;
+	            		}
             			out.insertDword(0x01);
             			client.send(out.format(PACKET_STATSUPDATE));
                 		System.out.println(":: Database login passed");
                 		
-                		send_user_info(client.session);
+                		distributor.send_user_info(client.session);
 	            	} else {
 	            		// terminate
                 		if (Boolean.parseBoolean(jbotnet.cfg.Read("security", "send_fail_response"))) {
@@ -234,7 +165,8 @@ public class parser {
         case PACKET_CYCLE:
         	break;
         case PACKET_USERINFO:
-    		send_users(client);
+    		distributor.send_users(client);
+    		client.session.set_state(session.LOGONSTATE_HAS_USERLIST);
         	break;
         case PACKET_COMMAND:
         	break;
@@ -253,14 +185,6 @@ public class parser {
         		break;
         	}
         	
-        	/*(DWORD) command
-		0	: message to all bots
-		1	: message to bots on the same database
-		2	: message to bot specified by id.
-	(DWORD) action	: 0x00=talk, 0x01=emote, any other is dropped
-	(DWORD) id	: for command 0x02, id of bot to send to, otherwise ignored.
-	(STRING:496) message: blank messages are dropped
-*/
         	int command = in.getDword();
         	int action = in.getDword();
         	int clientid = in.getDword();
@@ -304,7 +228,7 @@ public class parser {
         		out.insertDword(command);
         		out.insertDword(0x01);
         		
-        		send_user_info(client.session);
+        		distributor.send_user_logon(client.session);
         		break;
         	}
         	break;

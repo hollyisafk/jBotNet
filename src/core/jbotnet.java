@@ -1,5 +1,6 @@
 package core;
 
+import database.*;
 import net.*;
 
 public class jbotnet {
@@ -25,6 +26,9 @@ public class jbotnet {
         System.out.println(":: Welcome to jBotnet");
         System.out.println(":: Written by Richard Pianka");
         System.out.println(":: Version 0.1\r\n");
+        
+        database_factory dbf = new database_factory();
+        dbf.load();
         
         cfg = new config();
         svr = new server();

@@ -3,6 +3,7 @@ package user;
 public class session {
 	public static final int LOGONSTATE_LOGON_PASSED			= 0x01;
 	public static final int LOGONSTATE_IDENTIFIED			= 0x02;
+	public static final int LOGONSTATE_HAS_USERLIST			= 0x04;
 	
 	public int uid;
 	public int logon_state;
@@ -28,12 +29,12 @@ public class session {
 		botid = "";
 		botpass = "";
 		
-		bnetusername = "guest";
+		bnetusername = "";
 		bnetchannel = "<Not logged in>";
 		bnetserver = 0;
 		bnetserverip = "0.0.0.0";
 		
-		jbnusername = "guest";
+		jbnusername = "";
 		jbnuserpass = "";
 		jbndatabase = "public";
 		jbnpassword = "";
