@@ -1,19 +1,20 @@
 net {
   port							21845
   # set to 0 for unlimited
-  max_connections				0
+  max_connections					0
 }
 
 security {
-  allow_public_database			1
-  require_bot					0
-  send_fail_response			0
+  allow_public_database					1
+  require_bot						0
+  send_fail_response					0
 }
 
 bot {
   RivalBot						b8f9b319f223ddcc38
+  EternalChat						das93kajfdsklah3
 }
 
 database {
-  de							secret
+  null							qp09b198do3kd38a7e
 }
