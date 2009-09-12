@@ -20,4 +20,19 @@ public class database implements Serializable {
 		admin_password = ap;
 		entries = new ArrayList<database_entry>();
 	}
+	
+	public database_entry get_entry(String username) {
+		for (database_entry dbe : entries) {
+			if (dbe.username.equalsIgnoreCase(username)) {
+				return dbe;
+			}
+		}
+		
+		return null;
+	}
+	
+	public boolean create_entry(String username, String flags) {
+		entries.add(new database_entry(username, flags));
+		return true;
+	}
 }
