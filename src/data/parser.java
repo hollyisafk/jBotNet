@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.listener;
 
 import core.jbotnet;
+import database.account;
 import util.*;
 import user.*;
 
@@ -29,6 +30,7 @@ public class parser {
 	public static void parse(listener client, int id, byte[] data) {
         buffer_in in = new buffer_in(data);
         buffer_out out = new buffer_out();
+        int command;
         
 	    switch (id) {
         case PACKET_IDLE:
@@ -141,7 +143,7 @@ public class parser {
 	            		}
             			out.insertDword(0x01);
             			client.send(out.format(PACKET_STATSUPDATE));
-                		System.out.println(":: Database login passed");
+                		//System.out.println(":: Status update received");
                 		
                 		distributor.send_user_info(client.session);
 	            	} else {
@@ -159,6 +161,8 @@ public class parser {
         	}
         	break;
         case PACKET_DATABASE:
+        	command = in.getDword();
+        	
         	break;
         case PACKET_MESSAGE:
         	break;
@@ -185,7 +189,7 @@ public class parser {
         		break;
         	}
         	
-        	int command = in.getDword();
+        	command = in.getDword();
         	int action = in.getDword();
         	int clientid = in.getDword();
         	String message = in.getNTString();
@@ -215,21 +219,101 @@ public class parser {
         	
         	break;
         case PACKET_ACCOUNT:
+        	if (!client.session.is_state(session.LOGONSTATE_LOGON_PASSED)) {
+    			System.out.println(":: Account failed: invalid state");
+        		// dont do anything i guess
+        		break;
+        	}
+        	
         	command = in.getDword();
+    		String accountname;
+    		String accountpass;
+    		String accountnewpass;
+    		account a;
         	
         	switch (command) {
+        	// login
         	case 0x00:
-        		String accountname = in.getNTString();
-        		String accountpass = in.getNTString();
+        		accountname = in.getNTString();
+        		accountpass = in.getNTString();
         		
-        		client.session.jbnusername = accountname;
-        		client.session.jbnuserpass = accountpass;
+        		if (!jbotnet.acnt.account_exists(accountname)) {
+        			System.out.println(":: Account logon failed: invalid account");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+            		break;
+        		}
         		
+        		a = jbotnet.acnt.get_account(accountname);
+        		if (!a.password.equals(accountpass)) {
+        			System.out.println(":: Account logon failed: invalid password");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+            		break;
+        		}
+    			System.out.println(":: Account logon passed");
+        		
+    			client.session.jbnaccount = a;
+
         		out.insertDword(command);
         		out.insertDword(0x01);
+        		client.send(out.format(PACKET_ACCOUNT));
         		
         		distributor.send_user_logon(client.session);
         		break;
+        	// change password
+        	case 0x01:
+        		accountname = in.getNTString();
+        		accountpass = in.getNTString();
+        		accountnewpass = in.getNTString();
+        		
+        		if (!jbotnet.acnt.account_exists(accountname)) {
+        			System.out.println(":: Account password change failed: invalid account");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+            		break;
+        		}
+        		
+        		a = jbotnet.acnt.get_account(accountname);
+        		if (!a.password.equals(accountpass)) {
+        			System.out.println(":: Account password change failed: invalid password");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+            		break;
+        		}
+        		
+        		if (jbotnet.acnt.change_password(accountname, accountnewpass)) {
+        			System.out.println(":: Account password change passed");
+            		out.insertDword(command);
+            		out.insertDword(0x01);
+            		client.send(out.format(PACKET_ACCOUNT));
+        		} else {
+        			System.out.println(":: Account password change failed: unknown");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+        		}
+        		break;
+        	// create account
+        	case 0x02:
+        		accountname = in.getNTString();
+        		accountpass = in.getNTString();
+        		
+        		if (jbotnet.acnt.create_account(accountname, accountpass, 0)) {
+        			System.out.println(":: Account create passed");
+            		out.insertDword(command);
+            		out.insertDword(0x01);
+            		client.send(out.format(PACKET_ACCOUNT));
+        		} else {
+        			System.out.println(":: Account create failed: unknown");
+            		out.insertDword(command);
+            		out.insertDword(0x00);
+            		client.send(out.format(PACKET_ACCOUNT));
+        		}
         	}
         	break;
         case PACKET_CHATDROPOPTIONS:

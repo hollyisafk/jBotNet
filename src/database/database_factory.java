@@ -6,26 +6,15 @@ public class database_factory extends _factory<database> {
 	}
 	
 	public database get_database(String name) {
-		for (database db : entries) {
-			if (db.name.equalsIgnoreCase(name)) {
-				return db;
-			}
-		}
-		
-		return null;
+		return entries.get(name);
+	}
+	
+	public boolean database_exists(String name) {
+		return entries.get(name) != null ? true : false;
 	}
 	
 	public boolean create_database(String name, String rp, String wp, String ap) {
-		boolean exists = false;
-		
-		for (database db : entries) {
-			if (db.name.equalsIgnoreCase(name)) {
-				exists = true;
-				break;
-			}
-		}
-		
-		if (exists)
+		if (database_exists(name))
 			return false;
 		
 		add(new database(name, rp, wp, ap));

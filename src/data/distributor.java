@@ -68,7 +68,7 @@ public class distributor {
 		out.insertNTString(s.bnetusername);
 		out.insertNTString(s.bnetchannel);
 		out.insertDword(s.bnetserver);
-		out.insertNTString(s.jbnusername);
+		out.insertNTString(s.jbnaccount.username);
 		out.insertNTString(s.jbndatabase);
     	send_all(out.format(PACKET_USERINFO), s.uid, session.LOGONSTATE_HAS_USERLIST);
 	}
@@ -84,7 +84,7 @@ public class distributor {
 		out.insertNTString(s.bnetusername);
 		out.insertNTString(s.bnetchannel);
 		out.insertDword(s.bnetserver);
-		out.insertNTString(s.jbnusername);
+		out.insertNTString(s.jbnaccount.username);
 		out.insertNTString(s.jbndatabase);
     	send_all(out.format(PACKET_USERINFO), s.uid, session.LOGONSTATE_HAS_USERLIST);
 	}
@@ -108,7 +108,7 @@ public class distributor {
 		out.insertNTString(client.session.bnetusername);
 		out.insertNTString(client.session.bnetchannel);
 		out.insertDword(client.session.bnetserver);
-		out.insertNTString(client.session.jbnusername);
+		out.insertNTString(client.session.jbnaccount.username);
 		out.insertNTString(client.session.jbndatabase);
     	client.send(out.format(PACKET_USERINFO));
     	
@@ -124,7 +124,7 @@ public class distributor {
 	    		out.insertNTString(s.bnetusername);
 	    		out.insertNTString(s.bnetchannel);
 	    		out.insertDword(s.bnetserver);
-	    		out.insertNTString(s.jbnusername);
+	    		out.insertNTString(s.jbnaccount.username);
 	    		out.insertNTString(s.jbndatabase);
 	        	client.send(out.format(PACKET_USERINFO));
     		}

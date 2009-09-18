@@ -106,6 +106,7 @@ public class listener implements Runnable {
         }
         server.close();
       } catch (IOException ioe) {
+      	distributor.send_user_logoff(session.uid);
         System.out.println(":: IOException [listener.run]");
         ioe.printStackTrace();
     	jbotnet.svr.listeners.remove(this);

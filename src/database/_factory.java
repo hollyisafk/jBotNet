@@ -4,12 +4,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.Hashtable;
 
-public abstract class _factory<E> {
+public abstract class _factory<E extends _product> {
 	protected String file_path;
-	protected ArrayList<E> entries;
+	protected Hashtable<String, E> entries;
 
 	public _factory(String file) {
 		init(file);
@@ -17,19 +17,19 @@ public abstract class _factory<E> {
 	
 	public void init(String file) {
 		file_path = file;
-		entries = new ArrayList<E>();
+		entries = new Hashtable<String, E>();
 	}
 	
 	public void add(E e) {
-		entries.add(e);
+		entries.put(e.name, e);
 	}
 	
 	public void rem(E e) {
 		entries.remove(e);
 	}
 	
-	public Iterator<E> getIterator() {
-		return entries.iterator();
+	public Collection<E> getCollection() {
+		return entries.values();
 	}
 	
 	public void save() {
@@ -37,7 +37,7 @@ public abstract class _factory<E> {
 	        FileOutputStream fos = new FileOutputStream( file_path );
 	        ObjectOutputStream os = new ObjectOutputStream( fos );
 	        
-			for (E e : entries) {
+			for (E e : getCollection()) {
 			        os.writeObject(e);
 			        os.flush();
 			}
@@ -49,14 +49,14 @@ public abstract class _factory<E> {
 	@SuppressWarnings("unchecked")
 	public void load() {
 		try {
-			entries = new ArrayList<E>();
+			entries = new Hashtable<String, E>();
 			
 			FileInputStream fis = new FileInputStream( file_path );
 		    ObjectInputStream is = new ObjectInputStream( fis );
 		    E in = (E)is.readObject();
 		    
 		    while (in != null) {
-		    	entries.add(in);
+		    	entries.put(in.name, in);
 		    	in = (E)is.readObject();
 		    }
 		    

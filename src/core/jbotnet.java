@@ -6,6 +6,8 @@ import net.*;
 public class jbotnet {
 	public static config cfg;
 	public static server svr;
+	public static account_factory acnt;
+	public static database_factory db;
 	
 	private static void start_server() {
 		svr.m_port = Integer.parseInt(cfg.Read("net", "port"));
@@ -27,10 +29,11 @@ public class jbotnet {
         System.out.println(":: Written by Richard Pianka");
         System.out.println(":: Version 0.1\r\n");
         
-        database_factory dbf = new database_factory();
-        dbf.load();
-        
         cfg = new config();
+        acnt = new account_factory();
+        acnt.load();
+        db = new database_factory();
+        db.load();
         svr = new server();
 		start_server();
 	}
