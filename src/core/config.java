@@ -8,11 +8,24 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class config
-{
+import util._semaphore;
 
-    public config()
+/**
+ * please ignore this giant piece of shit i call a config class
+ */
+
+public class config extends _semaphore
+{
+	private static config instance = null;
+	
+    private config()
     {
+    }
+    
+    public static config get_instance() {
+    	if (instance == null)
+    		instance = new config();
+    	return instance;
     }
     
     public void Write(String block, String var, String value) {
@@ -21,6 +34,7 @@ public class config
     
     public void Write(String block, String var, String value, String file_loc)
     {
+    	_lock();
         try
         {
             String configFilename = System.getProperty("user.dir") + file_loc;
@@ -111,9 +125,10 @@ public class config
         }
         catch (IOException e)
         {
-            System.out.println(":: Error reading configuration file!");
+            terminal.print("Error reading configuration file!");
+        } finally {
+        	_unlock();
         }
-        
     }
     
     public String Read(String block, String var) {
@@ -122,7 +137,7 @@ public class config
     
     public String Read(String block, String var, String file_loc)
     {
-
+    	_lock();
         try
         {
             File file = new File(System.getProperty("user.dir") + file_loc);
@@ -199,7 +214,9 @@ public class config
         }
         catch (IOException e)
         {
-            System.out.println(":: Error reading configuration file!");
+            terminal.print("Error reading configuration file!");
+        } finally {
+        	_unlock();
         }
 
         return "";
@@ -261,6 +278,6 @@ public class config
     
     public void ThrowError(int line, String description)
     {
-        System.out.println(":: Config Error: Line " + line + " -- " + description);
+        terminal.print("Config Error: Line " + line + " -- " + description);
     }
 }

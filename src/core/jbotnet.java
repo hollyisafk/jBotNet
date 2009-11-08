@@ -1,40 +1,42 @@
 package core;
 
 import database.*;
+import plugin.*;
+import user.account_factory;
 import net.*;
 
 public class jbotnet {
-	public static config cfg;
-	public static server svr;
-	public static account_factory acnt;
-	public static database_factory db;
-	
 	private static void start_server() {
-		svr.m_port = Integer.parseInt(cfg.Read("net", "port"));
-		svr.m_max_connections = Integer.parseInt(cfg.Read("net", "max_connections"));
-        Thread svr_t = new Thread(svr);
+		get_svr().set_m_port(settings.net_port);
+		get_svr().set_m_max_connections(settings.net_max_connections);
+        Thread svr_t = new Thread(get_svr());
         svr_t.start();
 	}
 	
-	public static void main(String[] args) {
-        System.out.println("      _ ______                               ");
-        System.out.println("     (_|____  \\        _                 _   ");
-        System.out.println("      _ ____)  ) ___ _| |_ ____  _____ _| |_ ");
-        System.out.println("     | |  __  ( / _ (_   _)  _ \\| ___ (_   _)");
-        System.out.println("     | | |__)  ) |_| || |_| | | | ____| | |_ ");
-        System.out.println("    _| |______/ \\___/  \\__)_| |_|_____)  \\__)");
-        System.out.println("   (__/\r\n");
+	public static void main(String[] args) {    
+		settings.load();
+		terminal.print_logo();
+		terminal.print_version();
+        terminal.print_stats();
         
-        System.out.println(":: Welcome to jBotnet");
-        System.out.println(":: Written by Richard Pianka");
-        System.out.println(":: Version 0.1\r\n");
+        //get_db().create_database("null", "qp09b198do3kd38a7e", "am947fckzbe74hjtd0", "0vyyu2kxhy378ibvr1");
         
-        cfg = new config();
-        acnt = new account_factory();
-        acnt.load();
-        db = new database_factory();
-        db.load();
-        svr = new server();
 		start_server();
+	}
+
+	public static server get_svr() {
+		return server.get_instance();
+	}
+
+	public static account_factory get_acnt() {
+		return account_factory.get_instance();
+	}
+
+	public static database_factory get_db() {
+		return database_factory.get_instance();
+	}
+
+	public static plugin_manager get_plug() {
+		return plugin_manager.get_instance();
 	}
 }

@@ -4,6 +4,8 @@ import net.listener;
 import user.session;
 import util.buffer_out;
 import core.jbotnet;
+import database.database;
+import database.database_entry;
 
 public class distributor {
 	public static final int PACKET_IDLE   				= 0x00;
@@ -49,44 +51,61 @@ public class distributor {
 	}
 	
 	public static void send_all(byte[] data, int skip, int state) {
-    	for (listener l : jbotnet.svr.listeners) {
-    		session s = l.session;
-    		if (s.uid == skip || !s.is_state(state))
+    	for (listener l : jbotnet.get_svr().listeners) {
+    		session s = l.get_session();
+    		if (s.get_uid() == skip || !s.is_state(state))
+    			continue;
+        	l.send(data);
+    	}
+	}
+	
+	public static void send_to(byte[] data, database db) {
+		send_to(data, 0, 0, db);
+	}
+	
+	public static void send_to(byte[] data, int skip, database db) {
+		send_to(data, skip, 0, db);
+	}
+	
+	public static void send_to(byte[] data, int skip, int state, database db) {
+    	for (listener l : jbotnet.get_svr().listeners) {
+    		session s = l.get_session();
+    		if (s.get_uid() == skip || !s.is_state(state) || s.get_jbndatabase().get_dbname().equals(db.get_dbname()))
     			continue;
         	l.send(data);
     	}
 	}
 	
 	public static void send_user_info(session s) {
-		if (s.uid < 1)
+		if (s.get_uid() < 1)
 			return;
 		
 		buffer_out out = new buffer_out();
-		out.insertDword(s.uid);
-		out.insertDword(0x01);
+		out.insertDword(s.get_uid());
+		out.insertDword(s.get_jbnflags());
 		out.insertDword(0x00);
-		out.insertNTString(s.bnetusername);
-		out.insertNTString(s.bnetchannel);
-		out.insertDword(s.bnetserver);
-		out.insertNTString(s.jbnaccount.username);
-		out.insertNTString(s.jbndatabase);
-    	send_all(out.format(PACKET_USERINFO), s.uid, session.LOGONSTATE_HAS_USERLIST);
+		out.insertNTString(s.get_bnetusername());
+		out.insertNTString(s.get_bnetchannel());
+		out.insertDword(s.get_bnetserver());
+		out.insertNTString(s.get_jbnaccount() == null ? "" : s.get_jbnaccount().get_username());
+		out.insertNTString(s.get_jbndatabase() == null ? "" : s.get_jbndatabase().get_dbname());
+    	send_all(out.format(PACKET_USERINFO), s.get_uid(), session.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static void send_user_logon(session s) {
-		if (s.uid < 1)
+		if (s.get_uid() < 1)
 			return;
 		
 		buffer_out out = new buffer_out();
-		out.insertDword(s.uid);
-		out.insertDword(0x01);
+		out.insertDword(s.get_uid());
+		out.insertDword(s.get_jbnflags());
 		out.insertDword(0x00);
-		out.insertNTString(s.bnetusername);
-		out.insertNTString(s.bnetchannel);
-		out.insertDword(s.bnetserver);
-		out.insertNTString(s.jbnaccount.username);
-		out.insertNTString(s.jbndatabase);
-    	send_all(out.format(PACKET_USERINFO), s.uid, session.LOGONSTATE_HAS_USERLIST);
+		out.insertNTString(s.get_bnetusername());
+		out.insertNTString(s.get_bnetchannel());
+		out.insertDword(s.get_bnetserver());
+		out.insertNTString(s.get_jbnaccount() == null ? "" : s.get_jbnaccount().get_username());
+		out.insertNTString(s.get_jbndatabase() == null ? "" : s.get_jbndatabase().get_dbname());
+    	send_all(out.format(PACKET_USERINFO), s.get_uid(), session.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static void send_user_logoff(int uid) {
@@ -102,35 +121,95 @@ public class distributor {
 	public static void send_users(listener client) {
 		buffer_out out = new buffer_out();
 		out.clear();
-		out.insertDword(client.session.uid);
-		out.insertDword(0x01);
+		out.insertDword(client.get_session().get_uid());
+		out.insertDword(client.get_session().get_jbnflags());
 		out.insertDword(0x00);
-		out.insertNTString(client.session.bnetusername);
-		out.insertNTString(client.session.bnetchannel);
-		out.insertDword(client.session.bnetserver);
-		out.insertNTString(client.session.jbnaccount.username);
-		out.insertNTString(client.session.jbndatabase);
+		out.insertNTString(client.get_session().get_bnetusername());
+		out.insertNTString(client.get_session().get_bnetchannel());
+		out.insertDword(client.get_session().get_bnetserver());
+		out.insertNTString(client.get_session().get_jbnaccount() == null ? "" :
+							client.get_session().get_jbnaccount().get_username());
+		out.insertNTString(client.get_session().get_jbndatabase() == null ? "" : 
+							client.get_session().get_jbndatabase().get_dbname());
     	client.send(out.format(PACKET_USERINFO));
     	
-    	for (listener l : jbotnet.svr.listeners) {
-    		session s = l.session;
-    		if (s.uid > 0 && s.uid != client.session.uid &&
-    				client.session.is_state(session.LOGONSTATE_IDENTIFIED)) {
+    	for (listener l : jbotnet.get_svr().listeners) {
+    		session s = l.get_session();
+    		if (s.get_uid() > 0 && s.get_uid() != client.get_session().get_uid() &&
+    				client.get_session().is_state(session.LOGONSTATE_IDENTIFIED)) {
     			
 	    		out.clear();
-	    		out.insertDword(s.uid);
-	    		out.insertDword(0x01);
+	    		out.insertDword(s.get_uid());
+	    		out.insertDword(s.get_jbnflags());
 	    		out.insertDword(0x00);
-	    		out.insertNTString(s.bnetusername);
-	    		out.insertNTString(s.bnetchannel);
-	    		out.insertDword(s.bnetserver);
-	    		out.insertNTString(s.jbnaccount.username);
-	    		out.insertNTString(s.jbndatabase);
+	    		out.insertNTString(s.get_bnetusername());
+	    		out.insertNTString(s.get_bnetchannel());
+	    		out.insertDword(s.get_bnetserver());
+	    		out.insertNTString(s.get_jbnaccount() == null ? "" : s.get_jbnaccount().get_username());
+	    		out.insertNTString(s.get_jbndatabase() == null ? "" : s.get_jbndatabase().get_dbname());
 	        	client.send(out.format(PACKET_USERINFO));
     		}
     	}
 
 		out.clear();
     	client.send(out.format(PACKET_USERINFO));
+	}
+	
+	public static void send_database(listener client, int age) {
+		long time = System.currentTimeMillis() / 1000;
+		buffer_out out = new buffer_out();
+		
+		out.insertDword(0x01);
+		if (age == 0) {
+			out.insertDword(0x00);
+		} else {
+			out.insertDword(0x01);
+		}
+		client.send(out.format(PACKET_DATABASE));
+		
+		for (database_entry entry : client.get_session().get_jbndatabase().get_entries().get_collection()) {
+			if (age == 0 || time - entry.get_last_edit_time() < age) {
+				out.clear();
+				out.insertDword(0x02);
+				out.insertDword(0x00);
+				out.insertDword(entry.get_last_edit_time());
+				out.insertNTString(entry.get_username());
+				out.insertNTString(entry.get_flags());
+				out.insertNTString("");
+				client.send(out.format(PACKET_DATABASE));
+			}
+		}
+		
+		out.clear();
+		out.insertDword(0x01);
+		out.insertDword(0x02);
+		client.send(out.format(PACKET_DATABASE));
+	}
+	
+	public static void update_usermask(session client, database db, database_entry dbe, String comment) {
+		buffer_out out = new buffer_out();
+		out.insertDword(0x02);
+		out.insertDword(client.get_uid());
+		out.insertDword(dbe.get_last_edit_time());
+		out.insertNTString(dbe.get_username());
+		out.insertNTString(dbe.get_flags());
+		out.insertNTString(comment);
+		send_all(out.format(PACKET_DATABASE), 0, session.LOGONSTATE_IDENTIFIED);
+	}
+	
+	public static void delete_usermask(session client, database db, database_entry dbe, String comment) {
+		buffer_out out = new buffer_out();
+			
+		out.clear();
+		out.insertDword(0x03);
+		out.insertDword(client.get_uid());
+		out.insertDword(dbe.get_last_edit_time());
+		out.insertNTString(dbe.get_username());
+		out.insertNTString(comment);
+		send_all(out.format(PACKET_DATABASE), 0, session.LOGONSTATE_IDENTIFIED);
+	}
+	
+	public static void send_database_notify(listener client, int command, String user) {
+
 	}
 }

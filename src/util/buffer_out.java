@@ -18,9 +18,9 @@ public class buffer_out {
     public void clear()
     {
         defaultLength = 32;
-        buffer = new byte[defaultLength];
-	currentLength = 0;
-	maxLength = defaultLength;
+	        buffer = new byte[defaultLength];
+		currentLength = 0;
+		maxLength = defaultLength;
     }
     
     public int length()
@@ -30,9 +30,9 @@ public class buffer_out {
     
     public byte[] getBuffer()
     {
-	byte returnBuffer[] = new byte[currentLength];
-	System.arraycopy(buffer, 0, returnBuffer, 0, currentLength);
-	return returnBuffer;
+		byte returnBuffer[] = new byte[currentLength];
+		System.arraycopy(buffer, 0, returnBuffer, 0, currentLength);
+		return returnBuffer;
     }
     
     public void reallocate(int size)
@@ -40,15 +40,12 @@ public class buffer_out {
         if ((currentLength + size) <= maxLength)
             return;
 
-		while ((currentLength + size) > maxLength)
-		{
+		while ((currentLength + size) > maxLength) {
 	        maxLength = maxLength * 2;
 	    }
 	
 		byte replaceBuffer[] = new byte[maxLength];
-	
 		System.arraycopy(buffer, 0, replaceBuffer, 0, currentLength);
-	
 		buffer = replaceBuffer;
     }
     

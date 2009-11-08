@@ -28,10 +28,10 @@ public class buffer_in {
 		position = 0;
 	}
 
-        public byte[] getBuffer()
-        {
-            return buffer;
-        }
+    public byte[] getBuffer()
+    {
+        return buffer;
+    }
         
 	public byte getByte()
 	{
@@ -68,87 +68,88 @@ public class buffer_in {
 		return returnString.toString();
 	}
         
-        public String getNTString()
-        {
-            for (int i = position, j = 0; i < currentLength; i++, j++) {
-                if (buffer[i] == 0x00) {
-                    String ret = new String(buffer, position, j);
-                    position += (j + 1);
-                    return ret;
-                }
+    public String getNTString()
+    {
+        for (int i = position, j = 0; i < currentLength; i++, j++) {
+            if (buffer[i] == 0x00) {
+                String ret = new String(buffer, position, j);
+                position += (j + 1);
+                return ret;
             }
-            System.out.println(":: Buffer couldn't find a null character!");
-            return "";
         }
+        //System.out.println(":: Buffer couldn't find a null character!");
+        return "";
+    }
+    
+    public String debugOutput()
+	{
+		StringBuffer returnString = new StringBuffer( (currentLength * 3) + // The hex
+			(currentLength) +     // The ascii
+			(currentLength / 4) + // The tabs/\n's
+			30 );                 // The text
         
-        public String debugOutput()
-    	{
-    		StringBuffer returnString = new StringBuffer( (currentLength * 3) + // The hex
-    			(currentLength) +     // The ascii
-    			(currentLength / 4) + // The tabs/\n's
-    			30 );                 // The text
-            
-    		//returnString.append("Buffer contents:\n");
-    		int i, j; // Loop variables
-    		for(i = 0; i < currentLength; i++)
-    		{
-    			if((i != 0) && (i % 16 == 0))
-    			{
-    				// If it's a multiple of 16 and i isn't null, show the ascii
-    				returnString.append('\t');
-    				for(j = i - 16; j < i; j++)
-    				{
-    					if(buffer[j] < 0x20 || buffer[j] > 0x7F)
-    						returnString.append('.');
-    					else
-    						returnString.append((char)buffer[j]);
-    				}
-    				// Add a linefeed after the string
-    				returnString.append("\n");
-    			}
+		//returnString.append("Buffer contents:\n");
+		int i, j; // Loop variables
+		for(i = 0; i < currentLength; i++)
+		{
+			if((i != 0) && (i % 16 == 0))
+			{
+				// If it's a multiple of 16 and i isn't null, show the ascii
+				returnString.append('\t');
+				for(j = i - 16; j < i; j++)
+				{
+					if(buffer[j] < 0x20 || buffer[j] > 0x7F)
+						returnString.append('.');
+					else
+						returnString.append((char)buffer[j]);
+				}
+				// Add a linefeed after the string
+				returnString.append("\n");
+			}
+    
+			returnString.append(Integer.toString((buffer[i] & 0xF0) >> 4, 16) +
+				Integer.toString((buffer[i] & 0x0F) >> 0, 16));
+			returnString.append(' ');
+		}
         
-    			returnString.append(Integer.toString((buffer[i] & 0xF0) >> 4, 16) +
-    				Integer.toString((buffer[i] & 0x0F) >> 0, 16));
-    			returnString.append(' ');
-    		}
-            
-    		// Add padding spaces if it's not a multiple of 16
-    		if(i != 0 && i % 16 != 0)
-    		{
-    			for(j = 0; j < ((16 - (i % 16)) * 3); j++)
-    			{
-    				returnString.append(' ');
-    			}
-    		}
-    		// Add the tab for alignment
-    		returnString.append('\t');
-        
-    		// Add final chararacters at right, after padding
-        
-    		// If it was at the end of a line, print out the full line
-    		if(i > 0 && (i % 16) == 0)
-    		{
-    			j = i - 16;
-    		}    
-    		else
-    		{
-    			j = (i - (i % 16));
-    		}
-        
-    		for(; i >= 0 && j < i; j++)
-    		{
-    			if(buffer[j] < 0x20 || buffer[j] > 0x7F)
-    				returnString.append('.');
-    			else
-    				returnString.append((char) buffer[j]);
-    		}
-        
-    		// Finally, tidy it all up with a newline
-    		returnString.append('\n');
-    		returnString.append("Length: " + currentLength + '\n');
-        
-    		return returnString.toString();
-    	}
+		// Add padding spaces if it's not a multiple of 16
+		if(i != 0 && i % 16 != 0)
+		{
+			for(j = 0; j < ((16 - (i % 16)) * 3); j++)
+			{
+				returnString.append(' ');
+			}
+		}
+		// Add the tab for alignment
+		returnString.append('\t');
+    
+		// Add final chararacters at right, after padding
+    
+		// If it was at the end of a line, print out the full line
+		if(i > 0 && (i % 16) == 0)
+		{
+			j = i - 16;
+		}    
+		else
+		{
+			j = (i - (i % 16));
+		}
+    
+		for(; i >= 0 && j < i; j++)
+		{
+			if(buffer[j] < 0x20 || buffer[j] > 0x7F)
+				returnString.append('.');
+			else
+				returnString.append((char) buffer[j]);
+		}
+    
+		// Finally, tidy it all up with a newline
+		returnString.append('\n');
+		returnString.append("Length: " + currentLength + '\n');
+    
+		return returnString.toString();
+	}
+    
 /*
 	public String getNTString()
         {
