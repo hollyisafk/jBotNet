@@ -63,7 +63,6 @@ public class packet_statsupdate extends _packet {
 				if (settings.security_allow_public_database) {
 					// put into public database	       
 	        		client.get_session().set_state(session.LOGONSTATE_IDENTIFIED);
-	        		// TODO: set
 	        		//client.session.jbndatabase = "public";
 	        		//client.session.jbnpassword = "";
 					client.send(build(0x01));

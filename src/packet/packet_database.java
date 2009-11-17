@@ -87,7 +87,6 @@ public class packet_database extends _packet {
 	
 	public static byte[] build(int response, int address) {
 		buffer_out out = new buffer_out();
-		// TODO: move code here
 		return out.format(PACKET_DATABASE);
 	}
 
