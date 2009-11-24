@@ -1,5 +1,8 @@
 package database;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import storage._warehouse;
 
 public class database_factory extends _warehouse<database> {
@@ -28,6 +31,13 @@ public class database_factory extends _warehouse<database> {
 	public boolean create_database(String name, String rp, String wp, String ap) {
 		//_lock();
 		if (database_exists(name))
+			return false;
+		
+		Pattern p = Pattern.compile("^[A-Za-z0-9_]*$");
+		Matcher m = p.matcher(name);
+		boolean b = m.matches();
+		
+		if (!b)
 			return false;
 		
 		add(new database(name, rp, wp, ap));

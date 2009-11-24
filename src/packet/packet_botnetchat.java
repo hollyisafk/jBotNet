@@ -1,11 +1,12 @@
 package packet;
 
 import java.util.ArrayList;
+
+import authentication.login_procedure;
 import net.listener;
 import util.buffer_out;
 
 import core.*;
-import user.*;
 
 public class packet_botnetchat extends _packet {
 	private static packet_botnetchat instance = null;
@@ -31,9 +32,9 @@ public class packet_botnetchat extends _packet {
 		clientid = get_argument("clientid").get_int();
 		message = get_argument("message").get_string();
 		
-		if (!client.get_session().is_state(session.LOGONSTATE_IDENTIFIED)) {
+		/*if (!client.get_session().is_state(login_procedure.LOGONSTATE_IDENTIFIED)) {
     		return;
-    	}
+    	}*/
     	
     	byte[] data = build(command, action, client.get_session().get_uid(), message);
     	

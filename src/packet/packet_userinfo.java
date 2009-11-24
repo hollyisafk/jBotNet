@@ -1,8 +1,9 @@
 package packet;
 
 import java.util.ArrayList;
+
+import authentication.login_procedure;
 import net.listener;
-import user.session;
 import util.buffer_out;
 import data.distributor;
 
@@ -17,7 +18,7 @@ public class packet_userinfo extends _packet {
 
 	protected void analyze(listener client) {
 		distributor.send_users(client);
-		client.get_session().set_state(session.LOGONSTATE_HAS_USERLIST);
+		client.get_session().set_state(login_procedure.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static byte[] build(int response) {

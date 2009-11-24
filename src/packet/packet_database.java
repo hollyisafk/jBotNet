@@ -2,13 +2,12 @@ package packet;
 
 import java.util.ArrayList;
 
-import net.listener;
-import user.session;
-import util.buffer_out;
-import core.jbotnet;
-import core.terminal;
-import data.distributor;
-import database.database_entry;
+import authentication.*;
+import core.*;
+import data.*;
+import database.*;
+import net.*;
+import util.*;
 
 public class packet_database extends _packet {
 	private static packet_database instance = null;
@@ -31,30 +30,44 @@ public class packet_database extends _packet {
 	}
 
 	protected void analyze(listener client) {
-		if (!client.get_session().is_state(session.LOGONSTATE_IDENTIFIED)) {
-    		return;
-    	}
-
 		command = get_argument("command").get_int();
 		//age = get_argument("age").get_int();
 		usermask = get_argument("usermask").get_string();
 		flags = get_argument("flags").get_string();
 		comment = get_argument("comment").get_string();
     	
+		char[] flag_set = new char[256];
+		
+		for (int i = 0; i < 256; i++)
+			flag_set[i] = 0x00;
+		
+		for (int i = 0; i < flags.length(); i++) {
+			char cursor = flags.charAt(i);
+			if (Character.isLetter(cursor)) {
+				cursor = Character.toUpperCase(cursor);
+				flag_set[cursor] = cursor;
+			}
+		}
+		
+		flags = "";
+		for (int i = 0; i < 256; i++)
+			if (flag_set[i] != 0x00)
+				flags += flag_set[i];
+		
     	switch (command) {
     	case 0x01:
-    		if (client.get_session().get_jbnflags() < 0x01 || client.get_session().get_jbndatabase() == null) {
-    			break;
-    		}
+    		action_read_db action0 = new action_read_db();
+    		if (!sentry.get_instance().can_do(client.get_session(), action0))
+    			return;
     		
     		age = 0;
 			terminal.print_session(client, "Downloading database");
     		distributor.send_database(client, age);
     		break;
     	case 0x02:
-    		if (client.get_session().get_jbnflags() < 0x02 || client.get_session().get_jbndatabase() == null) {
-    			break;
-    		}
+    		action_edit_db action1 = new action_edit_db();
+    		if (!sentry.get_instance().can_do(client.get_session(), action1))
+    			return;
     		
     		database_entry dbe = client.get_session().get_jbndatabase().get_entry(usermask);
     		if (dbe == null) {
@@ -69,9 +82,9 @@ public class packet_database extends _packet {
     		}
     		break;
     	case 0x03:
-    		if (client.get_session().get_jbnflags() < 0x02 || client.get_session().get_jbndatabase() == null) {
-    			break;
-    		}
+    		action_edit_db action2 = new action_edit_db();
+    		if (!sentry.get_instance().can_do(client.get_session(), action2))
+    			return;
     		comment = flags;
     		
     		dbe = client.get_session().get_jbndatabase().get_entry(usermask);

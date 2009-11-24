@@ -3,11 +3,7 @@ package user;
 import database.database;
 
 public class session {
-	public static final int LOGONSTATE_LOGON_PASSED			= 0x01;
-	public static final int LOGONSTATE_IDENTIFIED			= 0x02;
-	public static final int LOGONSTATE_HAS_USERLIST			= 0x04;
-	public static final int LOGONSTATE_LOGGED_IN			= 0x08;
-	
+
 	public static final int DBACCESS_READ					= 0x01;
 	public static final int DBACCESS_WRITE					= 0x02;
 	public static final int DBACCESS_ADMIN					= 0x04;

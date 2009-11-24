@@ -1,5 +1,6 @@
 package data;
 
+import authentication.login_procedure;
 import net.listener;
 import user.session;
 import util.buffer_out;
@@ -89,7 +90,7 @@ public class distributor {
 		out.insertDword(s.get_bnetserver());
 		out.insertNTString(s.get_jbnaccount() == null ? "" : s.get_jbnaccount().get_username());
 		out.insertNTString(s.get_jbndatabase() == null ? "" : s.get_jbndatabase().get_dbname());
-    	send_all(out.format(PACKET_USERINFO), s.get_uid(), session.LOGONSTATE_HAS_USERLIST);
+    	send_all(out.format(PACKET_USERINFO), s.get_uid(), login_procedure.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static void send_user_logon(session s) {
@@ -105,7 +106,7 @@ public class distributor {
 		out.insertDword(s.get_bnetserver());
 		out.insertNTString(s.get_jbnaccount() == null ? "" : s.get_jbnaccount().get_username());
 		out.insertNTString(s.get_jbndatabase() == null ? "" : s.get_jbndatabase().get_dbname());
-    	send_all(out.format(PACKET_USERINFO), s.get_uid(), session.LOGONSTATE_HAS_USERLIST);
+    	send_all(out.format(PACKET_USERINFO), s.get_uid(), login_procedure.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static void send_user_logoff(int uid) {
@@ -115,7 +116,7 @@ public class distributor {
 		buffer_out out = new buffer_out();
 		out.insertDword(uid);
 		out.insertDword(0x07);
-		send_all(out.format(PACKET_USERLOGGINGOFF), 0, session.LOGONSTATE_HAS_USERLIST);
+		send_all(out.format(PACKET_USERLOGGINGOFF), 0, login_procedure.LOGONSTATE_HAS_USERLIST);
 	}
 	
 	public static void send_users(listener client) {
@@ -136,7 +137,7 @@ public class distributor {
     	for (listener l : jbotnet.get_svr().listeners) {
     		session s = l.get_session();
     		if (s.get_uid() > 0 && s.get_uid() != client.get_session().get_uid() &&
-    				client.get_session().is_state(session.LOGONSTATE_IDENTIFIED)) {
+    				client.get_session().is_state(login_procedure.LOGONSTATE_IDENTIFIED)) {
     			
 	    		out.clear();
 	    		out.insertDword(s.get_uid());
@@ -194,7 +195,7 @@ public class distributor {
 		out.insertNTString(dbe.get_username());
 		out.insertNTString(dbe.get_flags());
 		out.insertNTString(comment);
-		send_all(out.format(PACKET_DATABASE), 0, session.LOGONSTATE_IDENTIFIED);
+		send_all(out.format(PACKET_DATABASE), 0, login_procedure.LOGONSTATE_IDENTIFIED);
 	}
 	
 	public static void delete_usermask(session client, database db, database_entry dbe, String comment) {
@@ -206,7 +207,7 @@ public class distributor {
 		out.insertDword(dbe.get_last_edit_time());
 		out.insertNTString(dbe.get_username());
 		out.insertNTString(comment);
-		send_all(out.format(PACKET_DATABASE), 0, session.LOGONSTATE_IDENTIFIED);
+		send_all(out.format(PACKET_DATABASE), 0, login_procedure.LOGONSTATE_IDENTIFIED);
 	}
 	
 	public static void send_database_notify(listener client, int command, String user) {

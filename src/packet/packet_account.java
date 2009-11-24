@@ -2,12 +2,13 @@ package packet;
 
 import java.util.ArrayList;
 
+import authentication.login_procedure;
+
 import core.jbotnet;
 import core.terminal;
 import data.distributor;
 import net.listener;
 import user.account;
-import user.session;
 import util.buffer_out;
 
 public class packet_account extends _packet {
@@ -34,11 +35,11 @@ public class packet_account extends _packet {
 		pass = get_argument("pass").get_string();
 		newpass = get_argument("newpass").get_string();
 		
-		if (!client.get_session().is_state(session.LOGONSTATE_LOGON_PASSED)) {
+		/*if (!client.get_session().is_state(login_procedure.LOGONSTATE_LOGON_PASSED)) {
 			terminal.print_session(client, "Account failed: invalid state");
     		// dont do anything i guess
     		return;
-    	}
+    	}*/
     	
 		String accountname = name;
 		String accountpass = pass;
@@ -63,6 +64,7 @@ public class packet_account extends _packet {
 			terminal.print_session(client, "Account logon passed");
     		
 			client.get_session().set_jbnaccount(a);
+			client.get_session().set_state(login_procedure.LOGONSTATE_LOGGED_IN);
 
 			client.send(build(command, 0x01));
     		

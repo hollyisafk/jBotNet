@@ -2,6 +2,7 @@ package data;
 
 import java.util.ArrayList;
 
+import authentication.*;
 import packet.*;
 import net.listener;
 import util.*;
@@ -50,6 +51,15 @@ public class parser {
 	
 	public static void parse(listener client, int id, byte[] data) {
         buffer_in in = new buffer_in(data);
+        
+        action_send_packet action = new action_send_packet(id, in);
+        if (!sentry.get_instance().can_do(client.get_session(), action)) {
+        	try {
+        		client.get_socket().close();
+        	} catch (Exception e) {}
+        	return;
+        }
+        
         _packet on;
 
         for (int i = 0; i < packets.size(); i++) {
@@ -58,44 +68,5 @@ public class parser {
         		on.parse(client, in);
         	}
         }
-        
-        /*
-	    switch (id) {
-        case PACKET_IDLE:
-        	break;
-        case PACKET_LOGON:
-        	packet_logon.get_instance().parse(client, in);
-        	break;
-        case PACKET_STATSUPDATE:
-        	packet_statsupdate.get_instance().parse(client, in);
-        	break;
-        case PACKET_DATABASE:
-        	packet_database.get_instance().parse(client, in);
-        	break;
-        case PACKET_MESSAGE:
-        	packet_message.get_instance().parse(client, in);
-        	break;
-        case PACKET_CYCLE:
-        	break;
-        case PACKET_USERINFO:
-        	packet_userinfo.get_instance().parse(client, in);
-        	break;
-        case PACKET_COMMAND:
-        	packet_command.get_instance().parse(client, in);
-        	break;
-        case PACKET_CHANGEDBPASSWORD:
-        	break;
-        case PACKET_BOTNETVERSION:
-        	packet_botnetversion.get_instance().parse(client, in);
-        	break;
-        case PACKET_BOTNETCHAT:
-        	packet_botnetchat.get_instance().parse(client, in);
-        	break;
-        case PACKET_ACCOUNT:
-        	packet_account.get_instance().parse(client, in);
-        	break;
-        case PACKET_CHATDROPOPTIONS:
-        	break;
-        }*/
 	}
 }

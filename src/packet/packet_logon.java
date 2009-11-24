@@ -3,9 +3,10 @@ package packet;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import authentication.login_procedure;
+
 import net.listener;
 
-import user.session;
 import util.buffer_out;
 import util.helper;
 import core.config;
@@ -36,7 +37,7 @@ public class packet_logon extends _packet {
 		if (!settings.security_require_bot || (config.get_instance().Read("bot", botid).equals(botpass) && botpass.length() != 0)) {
 			client.get_session().set_botid(botid);
 			client.get_session().set_botpass(botpass);
-			client.get_session().set_state(session.LOGONSTATE_LOGON_PASSED);
+			client.get_session().set_state(login_procedure.LOGONSTATE_LOGON_PASSED);
 
 			client.send(build(0x01, addr));
 			terminal.print_session(client, "Bot login passed");
