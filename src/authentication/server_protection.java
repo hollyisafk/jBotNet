@@ -9,7 +9,7 @@ public class server_protection implements _authenticator {
 	
 	public boolean can_do(session client, _action action) {
 		if (action.get_type() == _action.action_type.CREATE_ACCOUNT)
-			return _can_create_account(client, (action_create_account)action);
+			return _can_connect(client, (action_create_account)action);
 		return true;
 	}
 	
